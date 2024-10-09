@@ -1,9 +1,6 @@
 #include <bits/stdc++.h>
 #include "LinearAlgebra.h"
 using namespace std;
-
-const long double eps = 1e-9;
-
 /*
 Function_name(C, A, b, eps = eps_default)
 Input:
@@ -42,7 +39,7 @@ Steps:
 
 pair<long double, ColumnVector<long double>>
 simplex(const ColumnVector<long double> &C, const Matrix<long double> &A,
-        const ColumnVector<long double> &b, bool maximization) {
+        const ColumnVector<long double> &b, bool maximization, const long double eps = 1e-9) {
   // Printing z function
   cout << (maximization ? "max " : "min ") << "z = ";
   for (int i = 0; i < C.getM(); i++) {
@@ -74,11 +71,10 @@ simplex(const ColumnVector<long double> &C, const Matrix<long double> &A,
   vector<int> nonBasicVariables(A.getM() + A.getN() + 1);
   vector<int> basicVariables(A.getM() + 1);
   iota(nonBasicVariables.begin(), nonBasicVariables.end(), 0);
-  iota(basicVariables.begin() + 1, basicVariables.end(), A.getN()); //Can be a bug here
+  iota(basicVariables.begin() + 1, basicVariables.end(), A.getN());
   // starting to iterate
-  int iteration = 0;
+  long double solution = 0;
   while (true) {
-    iteration++;
     long double minZ = 2e9;
     int indCol = -1;
 
@@ -115,13 +111,15 @@ simplex(const ColumnVector<long double> &C, const Matrix<long double> &A,
     long double divideBy = tableau[indRow][indCol];
     for (int j = 0; j < tableau.getN(); j++)
       tableau[indRow][j] /= divideBy;
+
+    if (abs(solution - tableau[0].back()) < eps) break;
+    solution = tableau[0].back();
   }
   ColumnVector<long double> X(A.getN());
   for (int i = 1; i < basicVariables.size(); i++)
     if (basicVariables[i] < X.getM()) X[basicVariables[i]] = tableau[i].back();
 
-
-  return {tableau[0].back(), X};
+  return {solution, X};
 }
 
 int main() {
