@@ -12,6 +12,8 @@ import Text.Printf (printf, PrintfArg)
 import Data.List (dropWhileEnd)
 import Text.Read (readMaybe)
 import GHC.TopHandler (flushStdHandles)
+import Control.Exception (handle)
+import System.IO.Error (isDoesNotExistError)
 
 import InteriorPoint
 
@@ -108,7 +110,7 @@ printInteriorPointSolution eps alpha a c x = do
 
 printSimplexSolution :: (Read a, Ord a, Show a, Real a) =>
                          a -> Matrix a -> Vector a -> Vector a -> IO ()
-printSimplexSolution eps a b c = do
+printSimplexSolution eps a b c = handle handler $ do
   let n = ncols a
   let m = nrows a
 
@@ -131,6 +133,11 @@ printSimplexSolution eps a b c = do
 
   putStrLn "\nSimplex method:"
   putStrLn $ outputFormat (realToFrac eps) solutionVec optimum
+  where
+    handler :: IOError -> IO ()
+    handler err
+      | isDoesNotExistError err = putStrLn "Error: executable for simplex method does not exist"
+      | otherwise = ioError err
 
 main :: IO ()
 main = do
