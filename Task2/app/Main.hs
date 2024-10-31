@@ -32,7 +32,7 @@ outputFormat :: (Show a, PrintfArg a, Real a) => a -> Vector a -> a -> String
 outputFormat eps solutionVec optimum =
   let prettySolutionVec = foldl' (\str a -> str<>" "<>numberFormat eps a) "" solutionVec
   in
-  "Vector of desicion variables x*:\n"<>
+  "Vector of decision variables x*:\n"<>
   prettySolutionVec <>
   "\nOptimum value of the objective function:\n "<>
   numberFormat eps optimum
