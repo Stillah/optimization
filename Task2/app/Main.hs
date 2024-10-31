@@ -54,6 +54,17 @@ readVectorOfSize len prompt = do
       putStrLn "Invalid input. Please try again"
       readVectorOfSize len prompt
 
+readVectorThat :: Read a => (Vector a -> Bool) -> String -> IO (Vector a)
+readVectorThat p prompt = do
+  putStrLn prompt
+  input <- getLine
+  let parsed = mapM readMaybe (words input)
+  case parsed of
+    Just values | p (Vector.fromList values) -> return (Vector.fromList values)
+    _ -> do
+      putStrLn "Invalid input. Please try again"
+      readVectorThat p prompt
+
 readMatrixOfSize :: Read a => Int -> Int -> String -> IO (Matrix a)
 readMatrixOfSize m n prompt = do
   putStrLn prompt
@@ -73,15 +84,16 @@ readFractional prompt = do
     Just eps -> return eps
     _ -> putStrLn "Invalid input. Please enter a valid number." >> readFractional prompt
 
-readInputs :: (Read a, Fractional a) =>
+readInputs :: (Read a, Fractional a, Eq a) =>
                IO (Vector a, Matrix a, Vector a, Vector a, a)
 readInputs = do
   m <- readInt "Enter number of constraint equations:"
   n <- readInt "Enter number of variables:"
   c <- readVectorOfSize n "Enter vector of coefficients for the objective function - c:"
   a <- readMatrixOfSize m n "Enter matrix of coefficients of constraint function - A"
-  x <- readVectorOfSize n "Enter your initial starting point vector - x:"
   b <- readVectorOfSize m "Enter vector of right-hand side numbers - b:"
+  x <- readVectorThat (\x -> length x == n && a * colVector x == colVector b)
+    "Enter your initial starting point vector - x:"
   eps <- readFractional "Enter approximation accuracy epsilon:"
   return (c, a, x, b, eps)
 
