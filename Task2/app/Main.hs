@@ -86,7 +86,7 @@ readFractional prompt = do
     Just eps -> return eps
     _ -> putStrLn "Invalid input. Please enter a valid number." >> readFractional prompt
 
-readInputs :: (Read a, Fractional a, Eq a) =>
+readInputs :: (Read a, Fractional a, Eq a, Ord a) =>
                IO (Vector a, Matrix a, Vector a, Vector a, a)
 readInputs = do
   m <- readInt "Enter number of constraint equations:"
@@ -94,7 +94,9 @@ readInputs = do
   c <- readVectorOfSize n "Enter vector of coefficients for the objective function - c:"
   a <- readMatrixOfSize m n "Enter matrix of coefficients of constraint function - A"
   b <- readVectorOfSize m "Enter vector of right-hand side numbers - b:"
-  x <- readVectorThat (\x -> length x == n && a * colVector x == colVector b)
+  x <- readVectorThat (\x -> length x == n
+                          && all (> 0) x
+                          && a * colVector x == colVector b)
     "Enter your initial starting point vector - x:"
   eps <- readFractional "Enter approximation accuracy epsilon:"
   return (c, a, x, b, eps)
