@@ -41,34 +41,34 @@ pair<long double, ColumnVector<long double>>
 simplex(const ColumnVector<long double> &C, const Matrix<long double> &A,
         const ColumnVector<long double> &b, bool maximization, const long double eps = 1e-9) {
   // Printing z function
-  cout << (maximization ? "max " : "min ") << "z = ";
-  for (int i = 0; i < C.getM(); i++) {
-    cout << "(" << C[i] << " * x" << i + 1 << ") ";
-    if (i != C.getM() - 1) cout << "+ ";
-  }
-  cout << endl << "subject to the constraints:" << endl;
+//  cout << (maximization ? "max " : "min ") << "z = ";
+//  for (int i = 0; i < C.getM(); i++) {
+//    cout << "(" << C[i] << " * x" << i + 1 << ") ";
+//    if (i != C.getM() - 1) cout << "+ ";
+//  }
+//  cout << endl << "subject to the constraints:" << endl;
+//
+//  for (int i = 0; i < A.getM(); i++) {
+//    for (int j = 0; j < A.getN(); j++) {
+//      cout << "(" << A[i][j] << " * x" << j + 1 << ") ";
+//      if (j != A.getN() - 1) cout << "+ ";
+//    }
+//    cout << "<= " << b[i] << endl;
+//  }
+//  cout << endl;
 
-  for (int i = 0; i < A.getM(); i++) {
-    for (int j = 0; j < A.getN(); j++) {
-      cout << "(" << A[i][j] << " * x" << j + 1 << ") ";
-      if (j != A.getN() - 1) cout << "+ ";
-    }
-    cout << "<= " << b[i] << endl;
-  }
-  cout << endl;
-
-  Matrix<long double> tableau(A.getM() + 1, A.getM() + A.getN() + 1);
+  Matrix<long double> tableau(A.getM() + 1, A.getN() + 1);
   for (int i = 0; i < C.getM(); i++) tableau[0][i] = maximization? -C[i]: C[i];
   for (int i = 0; i < b.getM(); i++) tableau[i + 1].back() = b[i];
   for (int i = 0; i < A.getM(); i++) {
     for (int j = 0; j < A.getN(); j++)
       tableau[i + 1][j] = A[i][j];
     // slack variable
-    tableau[i + 1][A.getN() + i] = 1;
+    //tableau[i + 1][A.getN() + i] = 1;
   }
 
 
-  vector<int> nonBasicVariables(A.getM() + A.getN() + 1);
+  vector<int> nonBasicVariables(A.getN() + 1);
   vector<int> basicVariables(A.getM() + 1);
   iota(nonBasicVariables.begin(), nonBasicVariables.end(), 0);
   iota(basicVariables.begin() + 1, basicVariables.end(), A.getN());
@@ -128,7 +128,7 @@ int main() {
   ColumnVector<long double> C(n);
   Matrix<long double> A(m, n);
   ColumnVector<long double> b(m);
-
+  long double eps;
   for (int i = 0; i < n; i++)
     cin >> C[i];
 
@@ -137,8 +137,11 @@ int main() {
       cin >> A[i][j];
     cin >> b[i];
   }
+
+  cin >> eps;
+
   try {
-    auto ans = simplex(C, A, b, true);
+    auto ans = simplex(C, A, b, true, eps);
     cout << ans.first << "\n";
     for (int i = 0; i < ans.second.getM(); i++)
       cout << ans.second[i] << " ";
